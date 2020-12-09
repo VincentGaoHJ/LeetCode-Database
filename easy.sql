@@ -5,7 +5,6 @@
 # regardless if there is an address for each of those people:
 # FirstName, LastName, City, State
 # ----------------------------------------------------------------------------------------------------
-
 SELECT FirstName, LastName, City, State
 FROM Person
 LEFT JOIN Address
@@ -28,4 +27,14 @@ SELECT (
     LIMIT 1 OFFSET 1
 ) AS SecondHighestSalary;
 
-
+# ----------------------------------------------------------------------------------------------------
+# 181. Employees Earning More Than Their Managers
+# ----------------------------------------------------------------------------------------------------
+# Given the Employee table, write a SQL query that finds out employees who earn more than their managers.
+# For the above table, Joe is the only employee who earns more than his manager.
+# ----------------------------------------------------------------------------------------------------
+SELECT e1.Name AS Employee
+FROM Employee e1
+JOIN Employee e2
+ON e1.managerId = e2.Id
+WHERE e1.Salary > e2.Salary
