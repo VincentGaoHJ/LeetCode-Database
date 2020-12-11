@@ -43,3 +43,23 @@ WHERE
     AND l2.Num = l3.Num
 ;
 
+
+# ----------------------------------------------------------------------------------------------------
+# 184. Department Highest Salary
+# ----------------------------------------------------------------------------------------------------
+# The Employee table holds all employees.
+# Every employee has an Id, a salary, and there is also a column for the department Id.
+# The Department table holds all departments of the company.
+# ----------------------------------------------------------------------------------------------------
+# Write a SQL query to find employees who have the highest salary in each of the departments.
+# For the above tables, your SQL query should return the following rows (order of rows does not matter).
+# ----------------------------------------------------------------------------------------------------
+SELECT dep.Name Department, emp.Name Employee, Salary
+FROM Employee emp
+JOIN Department dep
+ON emp.DepartmentId = dep.Id
+WHERE (emp.DepartmentId, emp.Salary) IN (
+    SELECT DepartmentId, MAX(Salary)
+    FROM Employee
+    GROUP BY DepartmentId
+);
