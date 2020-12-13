@@ -106,3 +106,131 @@ JOIN users u1 ON (t.client_id = u1.users_id AND u1.banned = 'No')
 JOIN users u2 ON (t.driver_id = u2.users_id AND u2.banned = 'No')
 WHERE request_at BETWEEN '2013-10-01' AND '2013-10-03'
 GROUP BY request_at
+
+
+# ----------------------------------------------------------------------------------------------------
+# 569. Median Employee Salary
+# ----------------------------------------------------------------------------------------------------
+# The Employee table holds all employees.
+# The employee table has three columns: Employee Id, Company Name, and Salary.
+# +-----+------------+--------+
+# |Id   | Company    | Salary |
+# +-----+------------+--------+
+# |1    | A          | 2341   |
+# |2    | A          | 341    |
+# ......
+# |17   | C          | 65     |
+# +-----+------------+--------+
+# Write a SQL query to find the median salary of each company.
+# Bonus points if you can solve it without using any built-in SQL functions.
+# +-----+------------+--------+
+# |Id   | Company    | Salary |
+# +-----+------------+--------+
+# |5    | A          | 451    |
+# |6    | A          | 513    |
+# |12   | B          | 234    |
+# |9    | B          | 1154   |
+# |14   | C          | 2645   |
+# +-----+------------+--------+
+# ----------------------------------------------------------------------------------------------------
+# Write your MySQL query statement below
+SELECT Employee.Id, Employee.Company, Salary
+FROM Employee
+JOIN (
+    SELECT Id, ROW_NUMBER () OVER (
+        PARTITION BY Company
+        ORDER BY Salary DESC
+    ) AS rank_num
+    FROM Employee
+) AS rank_tbl
+ON rank_tbl.Id = Employee.Id
+JOIN (
+    SELECT COUNT(*) company_count, Company
+    FROM Employee
+    GROUP BY Company
+) AS count_tbl
+ON count_tbl.Company = Employee.Company
+WHERE rank_num >= count_tbl.company_count / 2
+AND (Employee.Id, Employee.Company, Salary) IN (
+    SELECT Employee.Id, Employee.Company, Salary
+    FROM Employee
+    JOIN (
+        SELECT Id, ROW_NUMBER () OVER (
+            PARTITION BY Company
+            ORDER BY Salary
+        ) AS rank_num
+        FROM Employee
+    ) AS rank_tbl
+    ON rank_tbl.Id = Employee.Id
+    JOIN (
+        SELECT COUNT(*) company_count, Company
+        FROM Employee
+        GROUP BY Company
+    ) AS count_tbl
+    ON count_tbl.Company = Employee.Company
+    WHERE rank_num >= count_tbl.company_count / 2
+);
+# ---------------------------
+# 总的来说，不管是数组长度是奇是偶，也不管元素是不是唯一，中位数出现的频率一定大于等于大于它的数和小于它的数的绝对值之差。
+SELECT Employee.Id, Employee.Company, Employee.Salary
+FROM Employee, Employee alias
+WHERE Employee.Company = alias.Company
+GROUP BY Employee.Company , Employee.Salary
+HAVING SUM(
+    CASE
+    WHEN Employee.Salary = alias.Salary THEN 1
+    ELSE 0
+    END) >= ABS(SUM(SIGN(Employee.Salary - alias.Salary)))
+ORDER BY Employee.Id;
+# ---------------------------
+SELECT Id, E.Company, Salary
+FROM (
+    SELECT Id, Company, Salary, ROW_NUMBER() OVER(
+        PARTITION BY Company
+        ORDER BY Salary) rn
+    FROM Employee) E
+INNER JOIN(
+    SELECT Company, COUNT(*) total
+    FROM Employee
+    GROUP BY Company) T
+ON E.Company = T.Company
+AND rn BETWEEN total / 2 AND total / 2 + 1;
+
+
+# ----------------------------------------------------------------------------------------------------
+# 571. Find Median Given Frequency of Numbers
+# ----------------------------------------------------------------------------------------------------
+# The Numbers table keeps the value of number and its frequency.
+# +----------+-------------+
+# |  Number  |  Frequency  |
+# +----------+-------------|
+# |  0       |  7          |
+# |  1       |  1          |
+# |  2       |  3          |
+# |  3       |  1          |
+# +----------+-------------+
+# In this table, the numbers are 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 3, so the median is (0 + 0) / 2 = 0.
+# +--------+
+# | median |
+# +--------|
+# | 0.0000 |
+# +--------+
+# ----------------------------------------------------------------------------------------------------
+# Write a query to find the median of all numbers and name the result as median.
+# ----------------------------------------------------------------------------------------------------
+SELECT AVG(Number) AS 'median'
+FROM (
+    SELECT Number,
+    SUM(Frequency) OVER (
+        ORDER BY Number
+    ) asc_accmu,
+    SUM(Frequency) OVER (
+        ORDER BY Number DESC
+    ) desc_accumu
+    FROM Numbers
+) tbl
+JOIN (
+    SELECT SUM(Frequency) total
+    FROM Numbers
+) tbl2
+WHERE asc_accmu >= total / 2 and desc_accumu >= total / 2

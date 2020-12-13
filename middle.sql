@@ -63,3 +63,79 @@ WHERE (emp.DepartmentId, emp.Salary) IN (
     FROM Employee
     GROUP BY DepartmentId
 );
+
+# ----------------------------------------------------------------------------------------------------
+# 570. Managers with at Least 5 Direct Reports
+# ----------------------------------------------------------------------------------------------------
+# The Employee table holds all employees including their managers.
+# Every employee has an Id, and there is also a column for the manager Id.
+# +------+----------+-----------+----------+
+# |Id    |Name 	  |Department |ManagerId |
+# +------+----------+-----------+----------+
+# |101   |John 	  |A 	      |null      |
+# |102   |Dan 	  |A 	      |101       |
+# |103   |James 	  |A 	      |101       |
+# |104   |Amy 	  |A 	      |101       |
+# |105   |Anne 	  |A 	      |101       |
+# |106   |Ron 	  |B 	      |101       |
+# +------+----------+-----------+----------+
+# Given the Employee table, write a SQL query that finds out managers with at least 5 direct report.
+# For the above table, your SQL query should return:
+# +-------+
+# | Name  |
+# +-------+
+# | John  |
+# +-------+
+# ----------------------------------------------------------------------------------------------------
+SELECT Name
+FROM Employee
+WHERE Id IN (
+    SELECT ManagerId
+    FROM Employee
+    GROUP BY ManagerId
+    HAVING COUNT(*) >= 5
+);
+
+
+# ----------------------------------------------------------------------------------------------------
+# 574. Winning Candidate
+# ----------------------------------------------------------------------------------------------------
+# Table: Candidate
+# +-----+---------+
+# | id  | Name    |
+# +-----+---------+
+# | 1   | A       |
+# | 2   | B       |
+# | 3   | C       |
+# | 4   | D       |
+# | 5   | E       |
+# +-----+---------+
+# Table: Vote
+# +-----+--------------+
+# | id  | CandidateId  |
+# +-----+--------------+
+# | 1   |     2        |
+# | 2   |     4        |
+# | 3   |     3        |
+# | 4   |     2        |
+# | 5   |     5        |
+# +-----+--------------+
+# id is the auto-increment primary key,
+# CandidateId is the id appeared in Candidate table.
+# ----------------------------------------------------------------------------------------------------
+# Write a sql to find the name of the winning candidate, the above example will return the winner B.
+# +------+
+# | Name |
+# +------+
+# | B    |
+# +------+
+# ----------------------------------------------------------------------------------------------------
+SELECT Name
+FROM Vote
+JOIN Candidate
+ON Candidate.id = Vote.CandidateId
+GROUP BY CandidateId
+ORDER BY COUNT(*) DESC
+LIMIT 1
+
+
